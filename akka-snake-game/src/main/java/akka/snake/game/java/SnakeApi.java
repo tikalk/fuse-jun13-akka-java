@@ -11,5 +11,4 @@ public interface SnakeApi {
 	public void startGame();
 
 	public void endGame();
-
 }

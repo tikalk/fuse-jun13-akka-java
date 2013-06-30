@@ -34,9 +34,10 @@ public class Snake implements SnakeApi {
 	ActorSystem system;
 	ActorRef master;
 	ActorRef coordinator;
+	private final SnakeCallback callback;
 
 	public static void main(final String[] args) throws InterruptedException {
-		final Snake snake = new Snake();
+		final Snake snake = new Snake(null);
 		snake.init(0);
 
 		// API tests
@@ -55,6 +56,10 @@ public class Snake implements SnakeApi {
 		// snake.shutdownGracefully();
 		snake.shutdown();
 		Thread.sleep(1000);
+	}
+
+	public Snake(final SnakeCallback callback) {
+		this.callback = callback;
 	}
 
 	private void shutdownGracefully() {
@@ -104,7 +109,7 @@ public class Snake implements SnakeApi {
 		// create coordinator actor
 		coordinator = system.actorOf(Props.create(new ShutdownCoordinator.CoordinatorCreator(system)), "coordinator");
 		// create the master
-		master = system.actorOf(Props.create(new GameMaster.MasterCreator(nrOfWorkers, scheduler, eventStream)), "master");
+		master = system.actorOf(Props.create(new GameMaster.MasterCreator(nrOfWorkers, scheduler, eventStream, callback)), "master");
 
 		// resigter event bus master messages
 		eventStream.subscribe(master, Register.class);
@@ -152,6 +157,10 @@ public class Snake implements SnakeApi {
 	public void endGame() {
 		finish();
 		shutdown();
+	}
+
+	public static SnakeApi registerUICallback(final SnakeCallback callback) {
+		return new Snake(callback);
 	}
 }
 // #app

@@ -13,6 +13,7 @@ import akka.event.EventStream;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Creator;
+import akka.snake.game.java.SnakeCallback;
 import akka.snake.game.java.messages.Register;
 import akka.snake.game.java.messages.Result;
 import akka.snake.game.java.messages.SnakePosition;
@@ -31,10 +32,13 @@ public class GameMaster extends UntypedActor {// #master
 	private final Scheduler scheduler;
 	private final EventStream eventStream;
 
-	public GameMaster(final int nrOfCustomers, final EventStream eventStream, final Scheduler scheduler) {
+	private final SnakeCallback callback;
+
+	public GameMaster(final int nrOfCustomers, final EventStream eventStream, final Scheduler scheduler, final SnakeCallback callback) {
 		this.nrOfCustomers = nrOfCustomers;
 		this.eventStream = eventStream;
 		this.scheduler = scheduler;
+		this.callback = callback;
 
 		for (int i = 0; i < nrOfCustomers; i++) {
 			createUser(new Register("user-" + i, "user-" + i + ""));
@@ -72,6 +76,7 @@ public class GameMaster extends UntypedActor {// #master
 		} else if (message instanceof UnRegister) {
 			deleteUser((UnRegister) message);
 		} else if (message instanceof SnakePosition) {
+			// callback.handleData(data);
 			// todo handle the message
 		} else if (message instanceof Terminated) {
 			finish();
@@ -112,11 +117,13 @@ public class GameMaster extends UntypedActor {// #master
 		private final Scheduler scheduler;
 		private final EventStream eventStream;
 		private final int nrOfCustomers;
+		private final SnakeCallback callback;
 
-		public MasterCreator(final int nrOfCustomers, final Scheduler scheduler, final EventStream eventStream) {
+		public MasterCreator(final int nrOfCustomers, final Scheduler scheduler, final EventStream eventStream, final SnakeCallback callback) {
 			this.scheduler = scheduler;
 			this.eventStream = eventStream;
 			this.nrOfCustomers = nrOfCustomers;
+			this.callback = callback;
 		}
 
 		/**
@@ -124,7 +131,7 @@ public class GameMaster extends UntypedActor {// #master
 		 */
 		@Override
 		public GameMaster create() throws Exception {
-			return new GameMaster(nrOfCustomers, eventStream, scheduler);
+			return new GameMaster(nrOfCustomers, eventStream, scheduler, callback);
 		}
 	}
 }
