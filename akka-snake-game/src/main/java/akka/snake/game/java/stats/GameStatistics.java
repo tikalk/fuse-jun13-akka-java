@@ -1,5 +1,7 @@
 package akka.snake.game.java.stats;
 
+import java.util.List;
+
 import akka.snake.game.java.GameData;
 
 public interface GameStatistics {
@@ -13,5 +15,7 @@ public interface GameStatistics {
 	void addGameDataStats(GameData data);
 
 	UserStats get(String user);
+
+	List<UserStats> getAll();
 
 }
