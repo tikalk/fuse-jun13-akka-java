@@ -69,7 +69,6 @@ public class GameMaster extends UntypedActor {// #master
 		usersActorRefs.add(ref);
 		// subscribe to event stream
 		eventStream.subscribe(ref, StartGame.class);
-		eventStream.subscribe(ref, Tick.class);
 	}
 
 	private void deleteUser(final UnRegister message) {

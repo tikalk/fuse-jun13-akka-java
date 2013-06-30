@@ -16,6 +16,7 @@ import akka.snake.game.java.messages.MoveSnake;
 import akka.snake.game.java.messages.Register;
 import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
+import akka.snake.game.java.messages.Tick;
 import akka.snake.game.java.messages.UnRegister;
 
 //#app
@@ -54,34 +55,6 @@ public class Snake implements SnakeApi {
 		init();
 	}
 
-	
-//	private void shutdownGracefully() {
-//		final ArrayList<Future<Object>> futures = new ArrayList<Future<Object>>();
-//		// array of actors that can veto the shutdown decision
-//		futures.add(ask(master, new Result("shutdownGracefully"), 3000)); // using
-//																			// 1000ms
-//																			// timeout
-//
-//		// sequence the futures
-//		final Future<Iterable<Object>> aggregate = Futures.sequence(futures, system.dispatcher());
-//
-//		// aggregate multiple results into once decision
-//		final Future<Result> transformed = aggregate.map(new Mapper<Iterable<Object>, Result>() {
-//			@Override
-//			public Result apply(final Iterable<Object> coll) {
-//				for (final Object aColl : coll) {
-//					final Result next = (Result) aColl;
-//					if (!next.isShutdown()) {
-//						return new Result("shutdown", false);
-//					}
-//				}
-//				return new Result("shutdown", true);
-//			}
-//		}, system.dispatcher());
-//
-//		// pip aggregated result to the coordinator
-//		pipe(transformed, system.dispatcher()).to(coordinator);
-//	}
 
 	private void shutdown() {
 		system.shutdown();
@@ -108,7 +81,7 @@ public class Snake implements SnakeApi {
 		// resigter event bus master messages
 		eventStream.subscribe(master, Register.class);
 		eventStream.subscribe(master, StartGame.class);
-		eventStream.subscribe(master, SnakePosition.class);
+		eventStream.subscribe(master, Tick.class);
 	}
 
 	private void moveSnake(final String user, final MoveSnake.Direction direction) {
