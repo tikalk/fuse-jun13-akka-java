@@ -6,7 +6,7 @@ public interface SnakeApi {
 
 	public void unregister(String user);
 
-	public void move(String direction);
+	public void move(String user, String direction);
 
 	public void startGame();
 

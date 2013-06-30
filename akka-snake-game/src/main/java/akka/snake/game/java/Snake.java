@@ -112,7 +112,7 @@ public class Snake implements SnakeApi {
 		eventStream.subscribe(master, SnakePosition.class);
 	}
 
-	public void moveSnake(final String user, final MoveSnake.Direction direction) {
+	private void moveSnake(final String user, final MoveSnake.Direction direction) {
 		findActor(user).tell(direction, master);
 	}
 
@@ -138,21 +138,19 @@ public class Snake implements SnakeApi {
 	}
 
 	@Override
-	public void move(final String direction) {
-		// TODO Auto-generated method stub
-
+	public void move(final String user, final String direction) {
+		moveSnake(user, MoveSnake.Direction.valueOf(direction));
 	}
 
 	@Override
 	public void startGame() {
-		// TODO Auto-generated method stub
-
+		init(0);
 	}
 
 	@Override
 	public void endGame() {
-		// TODO Auto-generated method stub
-
+		finish();
+		shutdown();
 	}
 }
 // #app
