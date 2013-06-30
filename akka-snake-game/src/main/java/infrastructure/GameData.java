@@ -15,7 +15,7 @@ public class GameData {
     private final Board board;
     private final Set<Player> players;
 
-    public GameData(Board board, Set<Player> players, Set<Fruit> fruits) {
+    public GameData(Board board, Set<Player> players) {
         this.board = board;
         this.players = players;
     }
