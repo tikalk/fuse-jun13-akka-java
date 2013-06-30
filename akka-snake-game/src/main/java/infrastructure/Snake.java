@@ -1,5 +1,7 @@
 package infrastructure;
 
+import akka.snake.game.java.Player;
+
 /**
  * Created with IntelliJ IDEA.
  * User: noam
@@ -11,6 +13,11 @@ public class Snake {
     private Point head;
     private Point tail;
     private Direction direction;
+    private final Player player;
+
+    public Snake(Player player) {
+        this.player = player;
+    }
 
     public Point getHead() {
         return head;
