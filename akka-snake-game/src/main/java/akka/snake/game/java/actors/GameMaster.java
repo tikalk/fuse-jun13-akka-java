@@ -2,6 +2,7 @@ package akka.snake.game.java.actors;
 
 import java.util.concurrent.TimeUnit;
 
+import scala.collection.parallel.ParSeqLike.Updated;
 import scala.concurrent.duration.Duration;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
@@ -14,8 +15,8 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Creator;
 import akka.snake.game.java.SnakeCallback;
+import akka.snake.game.java.SnakeLogic;
 import akka.snake.game.java.messages.Register;
-import akka.snake.game.java.messages.Result;
 import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
 import akka.snake.game.java.messages.Tick;
@@ -24,25 +25,28 @@ import akka.snake.game.java.messages.UnRegister;
 public class GameMaster extends UntypedActor {// #master
 	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
-	private final int nrOfCustomers;
+//	private final int nrOfCustomers;
 	private long start;
 	private long end;
 
 	private Cancellable cancellable;
 	private final Scheduler scheduler;
 	private final EventStream eventStream;
+	private SnakeLogic snakeLogic;
+
 
 	private final SnakeCallback callback;
 
-	public GameMaster(final int nrOfCustomers, final EventStream eventStream, final Scheduler scheduler, final SnakeCallback callback) {
-		this.nrOfCustomers = nrOfCustomers;
+
+	public GameMaster(final EventStream eventStream, final Scheduler scheduler,SnakeCallback callback) {
+//		this.nrOfCustomers = nrOfCustomers;
 		this.eventStream = eventStream;
 		this.scheduler = scheduler;
 		this.callback = callback;
 
-		for (int i = 0; i < nrOfCustomers; i++) {
-			createUser(new Register("user-" + i, "user-" + i + ""));
-		}
+//		for (int i = 0; i < nrOfCustomers; i++) {
+//			createUser(new Register("user-" + i, "user-" + i + ""));
+//		}
 	}
 
 	private void createUser(final Register register) {
@@ -65,11 +69,14 @@ public class GameMaster extends UntypedActor {// #master
 		// #handle-messages
 		if (message instanceof StartGame) {
 			start = System.currentTimeMillis();
-			for (int start = 0; start < nrOfCustomers; start++) {
-				// workerRouter.tell(new Work(start, nrOfElements), getSelf());
-				eventStream.publish(message);
-			}
+			eventStream.publish(message);
+//			for (int start = 0; start < nrOfCustomers; start++) {
+//				// workerRouter.tell(new Work(start, nrOfElements), getSelf());
+//				eventStream.publish(message);
+//			}
 			// schedule game tick heart beat
+			//TODO: Call Scala Start Game
+//			snakeLogic.init(players)
 			scheduleTick();
 		} else if (message instanceof Register) {
 			createUser((Register) message);
@@ -80,13 +87,13 @@ public class GameMaster extends UntypedActor {// #master
 			// todo handle the message
 		} else if (message instanceof Terminated) {
 			finish();
-		} else if (message instanceof Result) {
-			try {
-				// todo some final snake grid calculation
-				getSender().tell(new Result("shutdown", true), getSelf());
-			} catch (final Exception e) {
-				getSender().tell(new akka.actor.Status.Failure(e), getSelf());
-			}
+//		} else if (message instanceof Result) {
+//			try {
+//				// todo some final snake grid calculation
+//				getSender().tell(new Result("shutdown", true), getSelf());
+//			} catch (final Exception e) {
+//				getSender().tell(new akka.actor.Status.Failure(e), getSelf());
+//			}
 		} else {
 			unhandled(message);
 		}
@@ -116,13 +123,11 @@ public class GameMaster extends UntypedActor {// #master
 	public static class MasterCreator implements Creator<GameMaster> {
 		private final Scheduler scheduler;
 		private final EventStream eventStream;
-		private final int nrOfCustomers;
 		private final SnakeCallback callback;
 
-		public MasterCreator(final int nrOfCustomers, final Scheduler scheduler, final EventStream eventStream, final SnakeCallback callback) {
+		public MasterCreator(final Scheduler scheduler, final EventStream eventStream, final SnakeCallback callback) {
 			this.scheduler = scheduler;
 			this.eventStream = eventStream;
-			this.nrOfCustomers = nrOfCustomers;
 			this.callback = callback;
 		}
 
@@ -131,7 +136,7 @@ public class GameMaster extends UntypedActor {// #master
 		 */
 		@Override
 		public GameMaster create() throws Exception {
-			return new GameMaster(nrOfCustomers, eventStream, scheduler, callback);
+			return new GameMaster(eventStream, scheduler, callback);
 		}
 	}
 }
