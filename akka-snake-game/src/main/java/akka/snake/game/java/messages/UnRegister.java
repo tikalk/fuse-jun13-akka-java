@@ -3,19 +3,18 @@ package akka.snake.game.java.messages;
 import java.io.Serializable;
 import java.util.UUID;
 
-public class Register implements Serializable {
+public class UnRegister implements Serializable {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -1147363136244878248L;
+	private static final long serialVersionUID = 6247500481372976207L;
 
 	private final String name;
-	private final String mail;
+	private String mail;
 	private final UUID userId;
 
-	public Register(final String name, final String mail) {
+	public UnRegister(final String name) {
 		this.name = name;
-		this.mail = mail;
 		userId = UUID.randomUUID();
 	}
 

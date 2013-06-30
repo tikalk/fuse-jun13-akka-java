@@ -4,20 +4,23 @@ import java.io.Serializable;
 import java.util.UUID;
 
 public class TerminateUser implements Serializable {
-    private UUID userId;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8398488247347884921L;
 
-    public TerminateUser(UUID userId) {
-        this.userId = userId;
-    }
+	private final UUID userId;
 
-    public UUID getUserId() {
-        return userId;
-    }
+	public TerminateUser(final UUID userId) {
+		this.userId = userId;
+	}
 
-    @Override
-    public String toString() {
-        return "TerminateUser{" +
-                "userId=" + userId +
-                '}';
-    }
+	public UUID getUserId() {
+		return userId;
+	}
+
+	@Override
+	public String toString() {
+		return "TerminateUser{" + "userId=" + userId + '}';
+	}
 }
