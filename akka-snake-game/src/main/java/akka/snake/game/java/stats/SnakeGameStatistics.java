@@ -69,6 +69,9 @@ public class SnakeGameStatistics implements GameStatistics {
 	private void addUser(final String user) {
 		if (!jedis.sismember("snake:users", user)) {
 			jedis.sadd("snake:users", user);
+			jedis.set("snake:wins:" + user, "0");
+			jedis.set("snake:loses:" + user, "0");
+			jedis.set("snake:score:" + user, "0");
 		}
 	}
 
@@ -123,8 +126,9 @@ public class SnakeGameStatistics implements GameStatistics {
 
 	public static void main(final String[] args) {
 		final SnakeGameStatistics stats = new SnakeGameStatistics();
-		final UserStats userStats = stats.get("hanan");
-
+		UserStats userStats = stats.get("hanan");
+		System.out.println("game stats for user: hanan \nwins \t" + userStats.getWins() + "\nloses \t" + userStats.getLoses() + "\ntotal score \t" + userStats.getTotalScore());
+		userStats = stats.get("lior");
 		System.out.println("game stats for user: hanan \nwins \t" + userStats.getWins() + "\nloses \t" + userStats.getLoses() + "\ntotal score \t" + userStats.getTotalScore());
 	}
 }
