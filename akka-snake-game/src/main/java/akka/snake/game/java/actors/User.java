@@ -10,6 +10,7 @@ import akka.event.LoggingAdapter;
 import akka.japi.Creator;
 import akka.snake.game.java.messages.GetSnakePosition;
 import akka.snake.game.java.messages.MoveSnake;
+import akka.snake.game.java.messages.MoveSnake.Direction;
 import akka.snake.game.java.messages.Register;
 import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.TerminateUser;
@@ -22,7 +23,7 @@ public class User extends UntypedActor {
     private final Register register;
     private final EventStream eventStream;
 
-    private MoveSnake.Direction direction;
+    private MoveSnake.Direction direction = Direction.UP;
     private Point location;
     private int snakeLength;
     private long lastTick;
@@ -36,7 +37,7 @@ public class User extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
-        log.info("user " + getSelf().path() + " receive message [" + message + "] ");
+        log.debug("user " + getSelf().path() + " receive message [" + message + "] ");
         if (message instanceof MoveSnake.Direction) {
             this.direction = (MoveSnake.Direction) message;
         } else if (message instanceof TerminateUser) {
@@ -46,7 +47,6 @@ public class User extends UntypedActor {
         } else if (message instanceof GetSnakePosition) {
 //            handleSnakeSize((Tick) message);
         	 getSender().tell(new SnakePosition(register,location,snakeLength,direction), getSelf());
-             direction = null; 
 //            eventStream.publish(new SnakePosition(register,location,snakeLength));
 /*
             getSender().tell(direction, getSelf());

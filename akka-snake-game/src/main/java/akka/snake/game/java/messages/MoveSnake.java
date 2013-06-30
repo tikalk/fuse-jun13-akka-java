@@ -19,7 +19,7 @@ public class MoveSnake implements Serializable{
                 "direction=" + direction +
                 '}';
     }
-
+    
     public static enum Direction {
         UP,DOWN,LEFT,RIGHT
     }

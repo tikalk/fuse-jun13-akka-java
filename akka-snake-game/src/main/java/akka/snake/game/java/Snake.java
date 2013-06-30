@@ -14,39 +14,42 @@ import akka.event.EventStream;
 import akka.snake.game.java.actors.GameMaster;
 import akka.snake.game.java.messages.MoveSnake;
 import akka.snake.game.java.messages.Register;
-import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
 import akka.snake.game.java.messages.Tick;
 import akka.snake.game.java.messages.UnRegister;
 
 //#app
 public class Snake implements SnakeApi {
+	
 
 	ActorSystem system;
 	ActorRef master;
-	ActorRef coordinator;
 	private final SnakeCallback callback;
 
 	public static void main(final String[] args) throws InterruptedException {
-		final Snake snake = new Snake(null);
-		snake.init();
+		System.out.println("START----------------------");
+		SnakeApi snake = Snake.registerUICallback(new SnakeCallback() {			
+			@Override
+			public void handleData(GameData data) {
+				System.out.println(data);				
+			}
+		});
 
 		// API tests
 		for (int i = 0; i < 5; i++) {
 			snake.register("User-" + i, "user" + i + "@tikalk.com");
 		}
-
-		snake.start();
+		
+		snake.startGame();
 		Thread.sleep(1000);
-		snake.moveSnake("User-0", MoveSnake.Direction.DOWN);
+		snake.move("User-0", MoveSnake.Direction.DOWN.name());
 		Thread.sleep(1000);
-		snake.moveSnake("User-3", MoveSnake.Direction.LEFT);
+		snake.move("User-3", MoveSnake.Direction.DOWN.name());
 		Thread.sleep(1000);
-		snake.finish();
-		Thread.sleep(1000);
+		Thread.sleep(100000000);
+		snake.endGame();
+		
 		// snake.shutdownGracefully();
-		snake.shutdown();
-		Thread.sleep(1000);
 	}
 
 
@@ -116,7 +119,7 @@ public class Snake implements SnakeApi {
 
 	@Override
 	public void startGame() {
-		init();
+//		init();
 		master.tell(new StartGame(), master);
 	}
 

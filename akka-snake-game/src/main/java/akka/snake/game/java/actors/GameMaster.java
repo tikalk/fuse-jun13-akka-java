@@ -36,7 +36,7 @@ public class GameMaster extends UntypedActor {// #master
 	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
 //	private final int nrOfCustomers;
-	private List<Player> players;
+	private List<Player> players = new LinkedList<Player>();
 	private List<ActorRef> usersActorRefs = new LinkedList<ActorRef>();
 	private GameData gameData;
 	private List<SnakePosition> snakePositions = new LinkedList<SnakePosition>();
@@ -46,7 +46,18 @@ public class GameMaster extends UntypedActor {// #master
 	private Cancellable cancellable;
 	private final Scheduler scheduler;
 	private final EventStream eventStream;
-	private SnakeLogic snakeLogic;
+	private SnakeLogic snakeLogic = new SnakeLogic() {
+		
+		@Override
+		public GameData nextStep(GameData prevData, Map<Player, String> moves) {
+			return new GameData();
+		}
+		
+		@Override
+		public GameData init(List<Player> players) {
+			return new GameData();
+		}
+	};
 
 
 	private final SnakeCallback callback;
@@ -81,7 +92,7 @@ public class GameMaster extends UntypedActor {// #master
 	// #master-receive
 	@Override
 	public void onReceive(final Object message) {
-		log.info("Master " + " receive message [" + message + "] from " + getSender().path());
+		log.debug("Master " + " receive message [" + message + "] from " + getSender().path());
 		// #handle-messages
 		if (message instanceof StartGame) {
 			start = System.currentTimeMillis();
@@ -118,8 +129,10 @@ public class GameMaster extends UntypedActor {// #master
 				Future<Object> future = Patterns.ask(userActorRef, new GetSnakePosition(), timeout);
 				try {
 					SnakePosition snakePosition = (SnakePosition) Await.result(future, timeout.duration());
-					moves.put(new Player(snakePosition.getUser().getName()), snakePosition.getDirection().toString());
+					log.debug("**********************************************new move: "+snakePosition.getUser().getName() +", "+ snakePosition.getDirection().name());
+					moves.put(new Player(snakePosition.getUser().getName()), snakePosition.getDirection().name());
 				} catch (Exception e) {
+					e.printStackTrace();
 					log.error("Could not process snake position for user "+userActorRef,e);
 				}
 			}
