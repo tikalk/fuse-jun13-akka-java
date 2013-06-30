@@ -14,73 +14,50 @@ import akka.event.EventStream;
 import akka.snake.game.java.actors.GameMaster;
 import akka.snake.game.java.messages.MoveSnake;
 import akka.snake.game.java.messages.Register;
-import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
+import akka.snake.game.java.messages.Tick;
 import akka.snake.game.java.messages.UnRegister;
 
 //#app
 public class Snake implements SnakeApi {
+	
 
 	ActorSystem system;
 	ActorRef master;
-	ActorRef coordinator;
 	private final SnakeCallback callback;
 
 	public static void main(final String[] args) throws InterruptedException {
-		final Snake snake = new Snake(null);
-		snake.init();
+		System.out.println("START----------------------");
+		SnakeApi snake = Snake.registerUICallback(new SnakeCallback() {			
+			@Override
+			public void handleData(GameData data) {
+				System.out.println(data);				
+			}
+		});
 
 		// API tests
 		for (int i = 0; i < 5; i++) {
 			snake.register("User-" + i, "user" + i + "@tikalk.com");
 		}
-
-		snake.start();
+		
+		snake.startGame();
 		Thread.sleep(1000);
-		snake.moveSnake("User-0", MoveSnake.Direction.DOWN);
+		snake.move("User-0", MoveSnake.Direction.DOWN.name());
 		Thread.sleep(1000);
-		snake.moveSnake("User-3", MoveSnake.Direction.LEFT);
+		snake.move("User-3", MoveSnake.Direction.DOWN.name());
 		Thread.sleep(1000);
-		snake.finish();
-		Thread.sleep(1000);
+		Thread.sleep(100000000);
+		snake.endGame();
+		
 		// snake.shutdownGracefully();
-		snake.shutdown();
-		Thread.sleep(1000);
 	}
 
 
 	public Snake(final SnakeCallback callback) {
 		this.callback = callback;
+		init();
 	}
 
-	
-//	private void shutdownGracefully() {
-//		final ArrayList<Future<Object>> futures = new ArrayList<Future<Object>>();
-//		// array of actors that can veto the shutdown decision
-//		futures.add(ask(master, new Result("shutdownGracefully"), 3000)); // using
-//																			// 1000ms
-//																			// timeout
-//
-//		// sequence the futures
-//		final Future<Iterable<Object>> aggregate = Futures.sequence(futures, system.dispatcher());
-//
-//		// aggregate multiple results into once decision
-//		final Future<Result> transformed = aggregate.map(new Mapper<Iterable<Object>, Result>() {
-//			@Override
-//			public Result apply(final Iterable<Object> coll) {
-//				for (final Object aColl : coll) {
-//					final Result next = (Result) aColl;
-//					if (!next.isShutdown()) {
-//						return new Result("shutdown", false);
-//					}
-//				}
-//				return new Result("shutdown", true);
-//			}
-//		}, system.dispatcher());
-//
-//		// pip aggregated result to the coordinator
-//		pipe(transformed, system.dispatcher()).to(coordinator);
-//	}
 
 	private void shutdown() {
 		system.shutdown();
@@ -107,7 +84,7 @@ public class Snake implements SnakeApi {
 		// resigter event bus master messages
 		eventStream.subscribe(master, Register.class);
 		eventStream.subscribe(master, StartGame.class);
-		eventStream.subscribe(master, SnakePosition.class);
+		eventStream.subscribe(master, Tick.class);
 	}
 
 	private void moveSnake(final String user, final MoveSnake.Direction direction) {
@@ -142,7 +119,7 @@ public class Snake implements SnakeApi {
 
 	@Override
 	public void startGame() {
-		init();
+//		init();
 		master.tell(new StartGame(), master);
 	}
 

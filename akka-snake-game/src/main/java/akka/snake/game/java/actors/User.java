@@ -1,14 +1,20 @@
 package akka.snake.game.java.actors;
 
+import java.awt.Point;
+
 import akka.actor.Terminated;
 import akka.actor.UntypedActor;
 import akka.event.EventStream;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Creator;
-import akka.snake.game.java.messages.*;
-
-import java.awt.*;
+import akka.snake.game.java.messages.GetSnakePosition;
+import akka.snake.game.java.messages.MoveSnake;
+import akka.snake.game.java.messages.MoveSnake.Direction;
+import akka.snake.game.java.messages.Register;
+import akka.snake.game.java.messages.SnakePosition;
+import akka.snake.game.java.messages.TerminateUser;
+import akka.snake.game.java.messages.Tick;
 
 public class User extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -17,7 +23,7 @@ public class User extends UntypedActor {
     private final Register register;
     private final EventStream eventStream;
 
-    private MoveSnake.Direction direction;
+    private MoveSnake.Direction direction = Direction.UP;
     private Point location;
     private int snakeLength;
     private long lastTick;
@@ -31,17 +37,17 @@ public class User extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
-        log.info("user " + getSelf().path() + " receive message [" + message + "] ");
+        log.debug("user " + getSelf().path() + " receive message [" + message + "] ");
         if (message instanceof MoveSnake.Direction) {
             this.direction = (MoveSnake.Direction) message;
         } else if (message instanceof TerminateUser) {
             //todo check uuid against registered user
             // Stops this actor and all its supervised children
             getContext().stop(getSelf());
-        } else if (message instanceof Tick) {
-            handleSnakeSize((Tick) message);
-
-            eventStream.publish(new SnakePosition(register,location,snakeLength));
+        } else if (message instanceof GetSnakePosition) {
+//            handleSnakeSize((Tick) message);
+        	 getSender().tell(new SnakePosition(register,location,snakeLength,direction), getSelf());
+//            eventStream.publish(new SnakePosition(register,location,snakeLength));
 /*
             getSender().tell(direction, getSelf());
             direction = null;

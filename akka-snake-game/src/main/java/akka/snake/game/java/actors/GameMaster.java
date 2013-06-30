@@ -1,8 +1,13 @@
 package akka.snake.game.java.actors;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import scala.collection.parallel.ParSeqLike.Updated;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
@@ -14,25 +19,45 @@ import akka.event.EventStream;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Creator;
+import akka.pattern.Patterns;
+import akka.snake.game.java.GameData;
+import akka.snake.game.java.Player;
 import akka.snake.game.java.SnakeCallback;
 import akka.snake.game.java.SnakeLogic;
+import akka.snake.game.java.messages.GetSnakePosition;
 import akka.snake.game.java.messages.Register;
 import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
 import akka.snake.game.java.messages.Tick;
 import akka.snake.game.java.messages.UnRegister;
+import akka.util.Timeout;
 
 public class GameMaster extends UntypedActor {// #master
 	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
 //	private final int nrOfCustomers;
+	private List<Player> players = new LinkedList<Player>();
+	private List<ActorRef> usersActorRefs = new LinkedList<ActorRef>();
+	private GameData gameData;
+	private List<SnakePosition> snakePositions = new LinkedList<SnakePosition>();
 	private long start;
 	private long end;
 
 	private Cancellable cancellable;
 	private final Scheduler scheduler;
 	private final EventStream eventStream;
-	private SnakeLogic snakeLogic;
+	private SnakeLogic snakeLogic = new SnakeLogic() {
+		
+		@Override
+		public GameData nextStep(GameData prevData, Map<Player, String> moves) {
+			return new GameData();
+		}
+		
+		@Override
+		public GameData init(List<Player> players) {
+			return new GameData();
+		}
+	};
 
 
 	private final SnakeCallback callback;
@@ -50,11 +75,13 @@ public class GameMaster extends UntypedActor {// #master
 	}
 
 	private void createUser(final Register register) {
-		final Props props3 = Props.create(new User.UserCreator(register, eventStream));
+		User.UserCreator user = new User.UserCreator(register, eventStream);
+		players.add(new Player(register.getName()));
+		final Props props3 = Props.create(user);
 		final ActorRef ref = this.getContext().actorOf(props3, register.getName());
+		usersActorRefs.add(ref);
 		// subscribe to event stream
 		eventStream.subscribe(ref, StartGame.class);
-		eventStream.subscribe(ref, Tick.class);
 	}
 
 	private void deleteUser(final UnRegister message) {
@@ -65,7 +92,7 @@ public class GameMaster extends UntypedActor {// #master
 	// #master-receive
 	@Override
 	public void onReceive(final Object message) {
-		log.info("Master " + " receive message [" + message + "] from " + getSender().path());
+		log.debug("Master " + " receive message [" + message + "] from " + getSender().path());
 		// #handle-messages
 		if (message instanceof StartGame) {
 			start = System.currentTimeMillis();
@@ -76,13 +103,14 @@ public class GameMaster extends UntypedActor {// #master
 //			}
 			// schedule game tick heart beat
 			//TODO: Call Scala Start Game
-//			snakeLogic.init(players)
+			gameData= snakeLogic.init(players);
 			scheduleTick();
 		} else if (message instanceof Register) {
 			createUser((Register) message);
 		} else if (message instanceof UnRegister) {
 			deleteUser((UnRegister) message);
 		} else if (message instanceof SnakePosition) {
+			snakePositions.add((SnakePosition) message);
 			// callback.handleData(data);
 			// todo handle the message
 		} else if (message instanceof Terminated) {
@@ -94,7 +122,24 @@ public class GameMaster extends UntypedActor {// #master
 //			} catch (final Exception e) {
 //				getSender().tell(new akka.actor.Status.Failure(e), getSelf());
 //			}
-		} else {
+		} else if (message instanceof Tick) {
+			Map<Player, String> moves = new HashMap<Player, String>();
+			for (ActorRef userActorRef : usersActorRefs) {
+				Timeout timeout = new Timeout(Duration.create(100, TimeUnit.MILLISECONDS));
+				Future<Object> future = Patterns.ask(userActorRef, new GetSnakePosition(), timeout);
+				try {
+					SnakePosition snakePosition = (SnakePosition) Await.result(future, timeout.duration());
+					log.debug("**********************************************new move: "+snakePosition.getUser().getName() +", "+ snakePosition.getDirection().name());
+					moves.put(new Player(snakePosition.getUser().getName()), snakePosition.getDirection().name());
+				} catch (Exception e) {
+					e.printStackTrace();
+					log.error("Could not process snake position for user "+userActorRef,e);
+				}
+			}
+			gameData = snakeLogic.nextStep(gameData, moves);
+			callback.handleData(snakeLogic.nextStep(gameData, moves));
+		}
+		else {
 			unhandled(message);
 		}
 		// #handle-messages

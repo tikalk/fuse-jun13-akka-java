@@ -10,7 +10,11 @@ public class Player {
         alive =true;
     }
 
-    public infrastructure.Snake getSnake() {
+    public Player(String name) {
+		this.name = name;
+	}
+
+	public infrastructure.Snake getSnake() {
         return snake;
     }
 
