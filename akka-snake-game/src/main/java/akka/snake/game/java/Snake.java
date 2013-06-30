@@ -11,6 +11,7 @@ import akka.actor.ActorSystem;
 import akka.actor.Props;
 import akka.actor.Scheduler;
 import akka.event.EventStream;
+import akka.japi.Creator;
 import akka.snake.game.java.actors.GameMaster;
 import akka.snake.game.java.messages.MoveSnake;
 import akka.snake.game.java.messages.Register;
@@ -79,7 +80,7 @@ public class Snake implements SnakeApi {
 //		coordinator = system.actorOf(Props.create(new ShutdownCoordinator.CoordinatorCreator(system)), "coordinator");
 		// create the master
 
-		master = system.actorOf(Props.create(new GameMaster.MasterCreator(scheduler, eventStream, callback)), "master");
+		master = system.actorOf(new Props().withCreator((Creator)new GameMaster.MasterCreator(scheduler, eventStream, callback)), "master");
 
 		// resigter event bus master messages
 		eventStream.subscribe(master, Register.class);

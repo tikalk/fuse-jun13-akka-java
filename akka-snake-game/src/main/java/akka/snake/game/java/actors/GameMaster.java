@@ -77,7 +77,7 @@ public class GameMaster extends UntypedActor {// #master
 	private void createUser(final Register register) {
 		User.UserCreator user = new User.UserCreator(register, eventStream);
 		players.add(new Player(register.getName()));
-		final Props props3 = Props.create(user);
+		final Props props3 = new Props().withCreator((Creator)user);
 		final ActorRef ref = this.getContext().actorOf(props3, register.getName());
 		usersActorRefs.add(ref);
 		// subscribe to event stream
