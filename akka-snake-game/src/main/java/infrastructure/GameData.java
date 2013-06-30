@@ -14,20 +14,14 @@ import java.util.Set;
 public class GameData {
     private final Board board;
     private final Set<Player> players;
-    private final Set<Fruit> fruits;
 
     public GameData(Board board, Set<Player> players, Set<Fruit> fruits) {
         this.board = board;
         this.players = players;
-        this.fruits = fruits;
     }
 
     public Board getBoard() {
         return board;
-    }
-
-    public Set<Fruit> getFruits() {
-        return fruits;
     }
 
     public Set<Player> getPlayers() {
