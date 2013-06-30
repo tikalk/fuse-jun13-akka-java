@@ -17,7 +17,7 @@ public class Board {
     private final Map<Point,BoardElement> boardElements;
 
     public Board(int maxX,int maxY) {
-        this.boardElements = new HashMap<>();
+        this.boardElements = new HashMap<Point,BoardElement>();
         this.maxX=maxX;
         this.maxY=maxY;
     }
