@@ -3,15 +3,19 @@ package akka.snake.game.java.messages;
 import java.awt.*;
 import java.io.Serializable;
 
+import akka.snake.game.java.messages.MoveSnake.Direction;
+
 public class SnakePosition implements Serializable {
     private Register user;
     private Point position;
     private int length;
+    private Direction direction;
 
-    public SnakePosition(Register user,Point position, int length) {
+    public SnakePosition(Register user,Point position, int length, Direction direction) {
         this.user = user;
         this.position = position;
         this.length = length;
+        this.direction= direction;
     }
 
     public Point getPosition() {

@@ -10,8 +10,16 @@ public class Player {
     public Player() {
         isAlive=true;
     }
+    
+    
 
-    public infrastructure.Snake getSnake() {
+    public Player(String name) {
+		this.name = name;
+	}
+
+
+
+	public infrastructure.Snake getSnake() {
         return snake;
     }
 

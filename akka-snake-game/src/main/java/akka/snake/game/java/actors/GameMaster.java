@@ -22,6 +22,7 @@ import akka.snake.game.java.GameData;
 import akka.snake.game.java.Player;
 import akka.snake.game.java.SnakeCallback;
 import akka.snake.game.java.SnakeLogic;
+import akka.snake.game.java.messages.GetSnakePosition;
 import akka.snake.game.java.messages.Register;
 import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
@@ -112,7 +113,7 @@ public class GameMaster extends UntypedActor {// #master
 		} else if (message instanceof Tick) {
 			for (ActorRef userActorRef : usersActorRefs) {
 				Timeout timeout = new Timeout(Duration.create(100, TimeUnit.MILLISECONDS));
-				Future<Object> future = Patterns.ask(userActorRef, message, timeout);
+				Future<Object> future = Patterns.ask(userActorRef, new GetSnakePosition(), timeout);
 				try {
 					SnakePosition snakePosition = (SnakePosition) Await.result(future, timeout.duration());
 				} catch (Exception e) {

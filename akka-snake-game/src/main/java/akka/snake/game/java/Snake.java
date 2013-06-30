@@ -51,6 +51,7 @@ public class Snake implements SnakeApi {
 
 	public Snake(final SnakeCallback callback) {
 		this.callback = callback;
+		init();
 	}
 
 	

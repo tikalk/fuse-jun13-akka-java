@@ -1,14 +1,19 @@
 package akka.snake.game.java.actors;
 
+import java.awt.Point;
+
 import akka.actor.Terminated;
 import akka.actor.UntypedActor;
 import akka.event.EventStream;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Creator;
-import akka.snake.game.java.messages.*;
-
-import java.awt.*;
+import akka.snake.game.java.messages.GetSnakePosition;
+import akka.snake.game.java.messages.MoveSnake;
+import akka.snake.game.java.messages.Register;
+import akka.snake.game.java.messages.SnakePosition;
+import akka.snake.game.java.messages.TerminateUser;
+import akka.snake.game.java.messages.Tick;
 
 public class User extends UntypedActor {
     private LoggingAdapter log = Logging.getLogger(getContext().system(), this);
@@ -38,10 +43,11 @@ public class User extends UntypedActor {
             //todo check uuid against registered user
             // Stops this actor and all its supervised children
             getContext().stop(getSelf());
-        } else if (message instanceof Tick) {
+        } else if (message instanceof GetSnakePosition) {
 //            handleSnakeSize((Tick) message);
-
-            eventStream.publish(new SnakePosition(register,location,snakeLength));
+        	 getSender().tell(new SnakePosition(register,location,snakeLength,direction), getSelf());
+             direction = null; 
+//            eventStream.publish(new SnakePosition(register,location,snakeLength));
 /*
             getSender().tell(direction, getSelf());
             direction = null;
