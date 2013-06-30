@@ -1,5 +1,7 @@
 package infrastructure;
 
+import akka.snake.game.java.Player;
+
 import java.util.Set;
 
 /**
@@ -11,12 +13,12 @@ import java.util.Set;
  */
 public class GameData {
     private final Board board;
-    private final Set<Snake> snakes;
+    private final Set<Player> players;
     private final Set<Fruit> fruits;
 
-    public GameData(Board board, Set<Snake> snakes, Set<Fruit> fruits) {
+    public GameData(Board board, Set<Player> players, Set<Fruit> fruits) {
         this.board = board;
-        this.snakes = snakes;
+        this.players = players;
         this.fruits = fruits;
     }
 
@@ -24,11 +26,11 @@ public class GameData {
         return board;
     }
 
-    public Set<Snake> getSnakes() {
-        return snakes;
-    }
-
     public Set<Fruit> getFruits() {
         return fruits;
+    }
+
+    public Set<Player> getPlayers() {
+        return players;
     }
 }
