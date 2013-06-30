@@ -1,9 +1,9 @@
 package akka.snake.game.java;
 
 import infrastructure.*;
-import infrastructure.Snake;
 
 public class Player {
+    private String name;
     private boolean isAlive;
 
     private infrastructure.Snake snake;
@@ -12,12 +12,11 @@ public class Player {
         isAlive=true;
     }
 
-
-    public Snake getSnake() {
+    public infrastructure.Snake getSnake() {
         return snake;
     }
 
-    public void setSnake(Snake snake) {
+    public void setSnake(infrastructure.Snake snake) {
         this.snake = snake;
     }
 }
