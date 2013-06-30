@@ -71,15 +71,15 @@ public class User extends UntypedActor {
 
     //actor factory
     static class UserCreator implements Creator<User> {
-        Register user;
+        Register register;
         EventStream eventStream;
 
-        public UserCreator(Register user, EventStream eventStream) {
-            this.user = user;
+        public UserCreator(Register register, EventStream eventStream) {
+            this.register = register;
             this.eventStream = eventStream;
         }
 
         @Override public User create() {
-            return new User(user,eventStream);
+            return new User(register,eventStream);
         }
     }}
