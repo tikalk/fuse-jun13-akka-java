@@ -29,8 +29,13 @@ public class SnakePosition implements Serializable {
     public Register getUser() {
         return user;
     }
+    
 
-    @Override
+    public Direction getDirection() {
+		return direction;
+	}
+
+	@Override
     public String toString() {
         return "SnakePosition{" +
                 "user=" + user +

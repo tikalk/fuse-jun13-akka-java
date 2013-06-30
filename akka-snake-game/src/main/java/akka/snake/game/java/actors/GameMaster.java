@@ -1,7 +1,9 @@
 package akka.snake.game.java.actors;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import scala.concurrent.Await;
@@ -110,15 +112,19 @@ public class GameMaster extends UntypedActor {// #master
 //				getSender().tell(new akka.actor.Status.Failure(e), getSelf());
 //			}
 		} else if (message instanceof Tick) {
+			Map<Player, String> moves = new HashMap<Player, String>();
 			for (ActorRef userActorRef : usersActorRefs) {
 				Timeout timeout = new Timeout(Duration.create(100, TimeUnit.MILLISECONDS));
 				Future<Object> future = Patterns.ask(userActorRef, new GetSnakePosition(), timeout);
 				try {
 					SnakePosition snakePosition = (SnakePosition) Await.result(future, timeout.duration());
+					moves.put(new Player(snakePosition.getUser().getName()), snakePosition.getDirection().toString());
 				} catch (Exception e) {
 					log.error("Could not process snake position for user "+userActorRef,e);
 				}
 			}
+			gameData = snakeLogic.nextStep(gameData, moves);
+			callback.handleData(snakeLogic.nextStep(gameData, moves));
 		}
 		else {
 			unhandled(message);
