@@ -145,6 +145,7 @@ public class Snake implements SnakeApi {
 	@Override
 	public void startGame() {
 		init(0);
+		master.tell(new StartGame(), master);
 	}
 
 	@Override
