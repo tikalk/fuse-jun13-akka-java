@@ -1,6 +1,5 @@
 package akka.snake.game.java;
 
-import infrastructure.*;
 
 public class Player {
     private String name;

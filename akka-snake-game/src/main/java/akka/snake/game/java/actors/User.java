@@ -39,7 +39,7 @@ public class User extends UntypedActor {
             // Stops this actor and all its supervised children
             getContext().stop(getSelf());
         } else if (message instanceof Tick) {
-            handleSnakeSize((Tick) message);
+//            handleSnakeSize((Tick) message);
 
             eventStream.publish(new SnakePosition(register,location,snakeLength));
 /*

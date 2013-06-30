@@ -1,8 +1,11 @@
 package akka.snake.game.java.actors;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import scala.collection.parallel.ParSeqLike.Updated;
+import scala.concurrent.Await;
+import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
 import akka.actor.ActorRef;
 import akka.actor.Cancellable;
@@ -14,6 +17,9 @@ import akka.event.EventStream;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.Creator;
+import akka.pattern.Patterns;
+import akka.snake.game.java.GameData;
+import akka.snake.game.java.Player;
 import akka.snake.game.java.SnakeCallback;
 import akka.snake.game.java.SnakeLogic;
 import akka.snake.game.java.messages.Register;
@@ -21,11 +27,16 @@ import akka.snake.game.java.messages.SnakePosition;
 import akka.snake.game.java.messages.StartGame;
 import akka.snake.game.java.messages.Tick;
 import akka.snake.game.java.messages.UnRegister;
+import akka.util.Timeout;
 
 public class GameMaster extends UntypedActor {// #master
 	private final LoggingAdapter log = Logging.getLogger(getContext().system(), this);
 
 //	private final int nrOfCustomers;
+	private List<Player> players;
+	private List<ActorRef> usersActorRefs = new LinkedList<ActorRef>();
+	private GameData gameData;
+	private List<SnakePosition> snakePositions = new LinkedList<SnakePosition>();
 	private long start;
 	private long end;
 
@@ -50,8 +61,11 @@ public class GameMaster extends UntypedActor {// #master
 	}
 
 	private void createUser(final Register register) {
-		final Props props3 = Props.create(new User.UserCreator(register, eventStream));
+		User.UserCreator user = new User.UserCreator(register, eventStream);
+		players.add(new Player(register.getName()));
+		final Props props3 = Props.create(user);
 		final ActorRef ref = this.getContext().actorOf(props3, register.getName());
+		usersActorRefs.add(ref);
 		// subscribe to event stream
 		eventStream.subscribe(ref, StartGame.class);
 		eventStream.subscribe(ref, Tick.class);
@@ -76,13 +90,14 @@ public class GameMaster extends UntypedActor {// #master
 //			}
 			// schedule game tick heart beat
 			//TODO: Call Scala Start Game
-//			snakeLogic.init(players)
+			gameData= snakeLogic.init(players);
 			scheduleTick();
 		} else if (message instanceof Register) {
 			createUser((Register) message);
 		} else if (message instanceof UnRegister) {
 			deleteUser((UnRegister) message);
 		} else if (message instanceof SnakePosition) {
+			snakePositions.add((SnakePosition) message);
 			// callback.handleData(data);
 			// todo handle the message
 		} else if (message instanceof Terminated) {
@@ -94,7 +109,18 @@ public class GameMaster extends UntypedActor {// #master
 //			} catch (final Exception e) {
 //				getSender().tell(new akka.actor.Status.Failure(e), getSelf());
 //			}
-		} else {
+		} else if (message instanceof Tick) {
+			for (ActorRef userActorRef : usersActorRefs) {
+				Timeout timeout = new Timeout(Duration.create(100, TimeUnit.MILLISECONDS));
+				Future<Object> future = Patterns.ask(userActorRef, message, timeout);
+				try {
+					SnakePosition snakePosition = (SnakePosition) Await.result(future, timeout.duration());
+				} catch (Exception e) {
+					log.error("Could not process snake position for user "+userActorRef,e);
+				}
+			}
+		}
+		else {
 			unhandled(message);
 		}
 		// #handle-messages
